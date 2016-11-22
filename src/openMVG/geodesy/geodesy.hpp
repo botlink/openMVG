@@ -21,6 +21,24 @@ static const double WGS84_A = 6378137.0;      // major axis
 static const double WGS84_B = 6356752.314245; // minor axis
 static const double WGS84_E = 0.0818191908;   // first eccentricity
 
+static inline Vec3 SphericalToGlobe(Vec3 coord){
+	double cphi = coord.z()*cos(coord.y());
+	
+	return Vec3{
+		cphi*cos(coord.x()),
+		cphi*sin(coord.x()),
+		coord.z()*sin(coord.y()),
+	};
+}
+
+static inline Vec3 GeodeticToGeocentric(Vec3 coord){
+	return SphericalToGlobe(Vec3{
+		D2R(coord.y()),
+		D2R(coord.x()),
+		coord.z() + WGS84_A,
+	});
+}
+
 /**
  ** Convert WGS84 lon,lat,alt data to ECEF data (Earth Centered Earth Fixed)
  ** @param lat Latitude in degree
@@ -35,20 +53,7 @@ Vec3 lla_to_ecef
   double alt
 )
 {
-  const double clat = cos( D2R(lat) );
-  const double slat = sin( D2R(lat) );
-  const double clon = cos( D2R(lon) );
-  const double slon = sin( D2R(lon) );
-
-  const double a2 = Square(WGS84_A);
-  const double b2 = Square(WGS84_B);
-
-  const double L = 1.0 / sqrt(a2 * Square(clat) + b2 * Square(slat));
-  const double x = (a2 * L + alt) * clat * clon;
-  const double y = (a2 * L + alt) * clat * slon;
-  const double z = (b2 * L + alt) * slat;
-
-  return Vec3(x, y, z);
+  return GeodeticToGeocentric(Vec3(lat, lon, alt));
 }
 
 /**
@@ -136,16 +141,7 @@ Vec3 ecef_to_lla
   double z
 )
 {
-  const double b = sqrt(WGS84_A*WGS84_A*(1-WGS84_E*WGS84_E));
-  const double ep = sqrt((WGS84_A*WGS84_A-b*b)/(b*b));
-  const double p = sqrt(x*x+y*y);
-  const double th = atan2(WGS84_A*z,b*p);
-  const double lon = atan2(y,x);
-  const double lat = atan2((z+ep*ep*b* pow(sin(th),3)),(p-WGS84_E*WGS84_E*WGS84_A*pow(cos(th),3)));
-  const double N = WGS84_A/sqrt(1-WGS84_E*WGS84_E*sin(lat)*sin(lat));
-  const double alt = p/cos(lat)-N;
-
-  return Vec3(R2D(lat), R2D(lon), alt);
+  abort();
 }
 
 } // namespace geodesy
