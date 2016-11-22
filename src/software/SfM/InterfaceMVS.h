@@ -81,12 +81,12 @@ struct ArchiveLoad;
 
 template<typename _Tp>
 bool Save(ArchiveSave& a, const _Tp& obj) {
-	const_cast<_Tp&>(obj).serialize(a, 0);
+//	const_cast<_Tp&>(obj).serialize(a, 0);
 	return true;
 }
 template<typename _Tp>
 bool Load(ArchiveLoad& a, _Tp& obj) {
-	obj.serialize(a, 0);
+//	obj.serialize(a, 0);
 	return true;
 }
 
